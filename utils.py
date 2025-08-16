@@ -1,9 +1,9 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
-def get_hand_buttons(hand):
-    """Build inline buttons for a player’s hand."""
-    buttons = []
-    for card in hand:
-        buttons.append([InlineKeyboardButton(card, callback_data=f"play|{card}")])
-    buttons.append([InlineKeyboardButton("Draw", callback_data="draw")])
-    return InlineKeyboardMarkup(buttons)
+def format_card(card: str) -> str:
+    """Optional helper to make card names pretty"""
+    mapping = {"R": "🔴", "G": "🟢", "B": "🔵", "Y": "🟡"}
+    for k, v in mapping.items():
+        if card.startswith(k):
+            return v + card[1:]
+    if "WILD" in card:
+        return "🌈" + card
+    return card
