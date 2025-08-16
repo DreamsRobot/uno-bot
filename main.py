@@ -1,9 +1,15 @@
 # main.py
 from pyrogram import Client, filters
-from config import BOT_TOKEN
+from config import API_ID, API_HASH, BOT_TOKEN
 from handlers import game, inline
 
-app = Client("uno-bot", bot_token=BOT_TOKEN)
+# Initialize Pyrogram Client
+app = Client(
+    "uno-bot",
+    api_id=API_ID,
+    api_hash=API_HASH,
+    bot_token=BOT_TOKEN
+)
 
 # Load game command handlers
 game.register_handlers(app)
@@ -15,14 +21,16 @@ inline.register_handlers(app)
 async def start(_, message):
     await message.reply_text(
         "👋 Welcome to UNO Bot!\n\n"
-        "Commands:\n"
-        "/newgame - Start new game\n"
-        "/joingame - Join game\n"
-        "/leavegame - Leave game\n"
-        "/skip - Skip turn\n"
-        "/kill - End game\n\n"
-        "Try inline mode: type @YourBotName in any chat 🎴"
+        "🎮 Game Commands:\n"
+        "/newgame - Start a new game\n"
+        "/joingame - Join the current game\n"
+        "/leavegame - Leave the game\n"
+        "/skip - Skip your turn\n"
+        "/kill - End the current game\n\n"
+        "✨ Inline Mode:\n"
+        "Type @YourBotUsername in any chat to view and play cards 🎴"
     )
 
-print("UNO Bot is running...")
-app.run()
+if __name__ == "__main__":
+    print("UNO Bot is running...")
+    app.run()
