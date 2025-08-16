@@ -36,3 +36,7 @@ def register_handlers(app):
     app.add_handler(CommandHandler("join", join))
     app.add_handler(CommandHandler("hand", hand))
     app.add_handler(CommandHandler("play", play))
+
+
+
+
