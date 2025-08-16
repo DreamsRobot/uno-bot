@@ -1,19 +1,15 @@
-from telegram.ext import Application, CommandHandler
-import os
+import logging
+from telegram.ext import Application
+from config import BOT_TOKEN
+from handlers import register_handlers
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-
-# Example command
-async def start(update, context):
-    await update.message.reply_text("Hello! UNO Bot is running 🚀")
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
 
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
-
-    # Register handlers
-    app.add_handler(CommandHandler("start", start))
-
-    # Run polling loop
+    register_handlers(app)
     app.run_polling()
 
 if __name__ == "__main__":
