@@ -1,10 +1,9 @@
 services:
   - type: web
-    name: uno-bot
+    name: telegram-music-bot
     env: python
-    plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python bot.py"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 bot.py
     envVars:
-      - key: BOT_TOKEN
-        sync: false
+      - key: PYTHON_VERSION
+        value: 3.11.9
