@@ -1,12 +1,12 @@
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import ContextTypes
+from telegram.ext import (
+    CommandHandler, CallbackQueryHandler, ContextTypes, Application
+)
 from game import UNOGame
+from config import BOT_TOKEN
 
-# Store active games
 games = {}
 
-
-# -------------------- Helpers -------------------- #
 def get_hand_buttons(hand):
     buttons = []
     for card in hand:
@@ -14,47 +14,24 @@ def get_hand_buttons(hand):
     buttons.append([InlineKeyboardButton("Draw", callback_data="draw")])
     return InlineKeyboardMarkup(buttons)
 
+# ─── Commands ───────────────────────────────────────────────
 
-async def send_hand(context, chat_id, player):
-    """Send current player's hand privately."""
-    game = games[chat_id]
-    hand = game.hands[player]
-    await context.bot.send_message(
-        chat_id=player,
-        text=f"Your turn! Top card: {game.discard[-1]}",
-        reply_markup=get_hand_buttons(hand)
-    )
-
-
-# -------------------- Commands -------------------- #
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🎴 UNO Bot Ready!\n\n"
-        "/new - New game\n"
-        "/join - Join game\n"
-        "/begin - Start\n"
-        "/leave - Leave\n"
-        "/kill - End game\n"
-        "/help - Help"
+        "🎴 UNO Bot Ready!\n/start - Welcome\n/new - New game\n/join - Join\n"
+        "/begin - Start\n/leave - Leave\n/help - Help"
     )
-
 
 async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "📘 UNO Help:\n"
-        "/new → Create game\n"
-        "/join → Join game\n"
-        "/begin → Start\n"
-        "/leave → Leave\n"
-        "/kill → End game"
+        "📘 UNO Help:\n/new → Create game\n/join → Join game\n/begin → Start\n"
+        "/leave → Leave\n/kick @user → Kick\n/kill → End game"
     )
-
 
 async def new_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     games[chat_id] = UNOGame()
     await update.message.reply_text("🆕 New UNO game created! Players use /join to enter.")
-
 
 async def join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
@@ -67,7 +44,6 @@ async def join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("You cannot join now.")
 
-
 async def leave(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     player = update.effective_user.id
@@ -78,13 +54,11 @@ async def leave(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("You’re not in the game.")
 
-
 async def kill(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     if chat_id in games:
         games.pop(chat_id)
         await update.message.reply_text("💀 Game ended.")
-
 
 async def start_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
@@ -98,8 +72,15 @@ async def start_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"Game started! First card: {game.discard[-1]}")
     await send_hand(context, chat_id, game.get_current_player())
 
+async def send_hand(context, chat_id, player):
+    game = games[chat_id]
+    hand = game.hands[player]
+    await context.bot.send_message(
+        chat_id=player,
+        text=f"Your turn! Top card: {game.discard[-1]}",
+        reply_markup=get_hand_buttons(hand)
+    )
 
-# -------------------- Button (Inline) -------------------- #
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -119,12 +100,20 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.send_message(chat_id, f"🎉 {query.from_user.first_name} wins the round!")
                 games.pop(chat_id)
                 return
-            await context.bot.send_message(
-                chat_id,
-                f"{query.from_user.first_name} played {card}. Next: {game.get_current_player()}"
-            )
+            await context.bot.send_message(chat_id, f"{query.from_user.first_name} played {card}. Next: {game.get_current_player()}")
             await send_hand(context, chat_id, game.get_current_player())
     elif action == "draw":
         game.draw_card(player)
         await query.edit_message_text("You drew a card.")
         await send_hand(context, chat_id, game.get_current_player())
+
+# ─── Register Handlers ──────────────────────────────────────
+def register_handlers(app: Application):
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("help", help_cmd))
+    app.add_handler(CommandHandler("new", new_game))
+    app.add_handler(CommandHandler("join", join))
+    app.add_handler(CommandHandler("leave", leave))
+    app.add_handler(CommandHandler("kill", kill))
+    app.add_handler(CommandHandler("begin", start_game))
+    app.add_handler(CallbackQueryHandler(button))
