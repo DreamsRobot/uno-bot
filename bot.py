@@ -1,14 +1,16 @@
 from telegram.ext import Application
-from handlers import register_handlers
-from config import BOT_TOKEN
+import os
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
-    # register all commands & callbacks
-    register_handlers(app)
+    # Register handlers here
+    # app.add_handler(CommandHandler("start", start))
 
-    print("🚀 UNO Bot is running...")
+    # Old (❌): app.updater.start_polling()
+    # New (✅):
     app.run_polling()
 
 if __name__ == "__main__":
