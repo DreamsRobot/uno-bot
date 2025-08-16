@@ -1,7 +1,10 @@
 services:
-  - type: worker
+  - type: web
     name: uno-bot
     env: python
-    region: oregon   # or choose your region
+    plan: free
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python3 bot.py"
+    startCommand: "python bot.py"
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
